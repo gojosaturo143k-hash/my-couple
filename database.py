@@ -8,7 +8,6 @@ DB_NAME = "bot_database.db"
 def get_connection():
     """Create and return a database connection."""
     conn = sqlite3.connect(DB_NAME)
-    # Enable autocommit for basic operations, though we use commit() explicitly
     conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
@@ -39,7 +38,6 @@ def save_user(chat_id: int, user_id: int, username: str | None, first_name: str 
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        # Using INSERT OR REPLACE to handle username/first_name updates seamlessly
         cursor.execute("""
             INSERT OR REPLACE INTO members (chat_id, user_id, username, first_name)
             VALUES (?, ?, ?, ?)
@@ -47,6 +45,25 @@ def save_user(chat_id: int, user_id: int, username: str | None, first_name: str 
         conn.commit()
     except sqlite3.Error as e:
         logger.error(f"Error saving user {user_id}: {e}")
+    finally:
+        conn.close()
+
+def get_user_by_id(chat_id: int, target_user_id: int) -> dict | None:
+    """Get a specific user by their ID (Used for VIP/Fixed users)."""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT user_id, username, first_name FROM members 
+            WHERE chat_id = ? AND user_id = ? 
+        """, (chat_id, target_user_id))
+        row = cursor.fetchone()
+        if row:
+            return {"user_id": row[0], "username": row[1], "first_name": row[2]}
+        return None
+    except sqlite3.Error as e:
+        logger.error(f"Error fetching user by ID: {e}")
+        return None
     finally:
         conn.close()
 
@@ -85,10 +102,6 @@ def get_random_couple(chat_id: int, exclude_user_id: int | None = None) -> list[
         conn = get_connection()
         cursor = conn.cursor()
         
-        # We fetch 2 random users. If exclude_user_id is provided, we exclude them.
-        # To ensure we don't pick the excluded user even if they are one of the random results,
-        # we fetch 3 and filter, or just exclude in SQL. 
-        # Getting 3 is safer to guarantee we still have 2 unique users left.
         limit = 3 if exclude_user_id else 2
         
         if exclude_user_id:
@@ -106,7 +119,6 @@ def get_random_couple(chat_id: int, exclude_user_id: int | None = None) -> list[
             
         rows = cursor.fetchall()
         
-        # Filter out any duplicates just in case, and take exactly 2
         unique_users = []
         seen_ids = set()
         for row in rows:
