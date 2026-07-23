@@ -69,13 +69,8 @@ async def husband_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     # MUMMY KA SPECIAL RULE
     if user.id == config.MUMMY_ID and config.FIXED_PAPA_ID:
         random_member = database.get_user_by_id(chat.id, config.FIXED_PAPA_ID)
-    
-    # CHECK FOR OTHER FIXED HUSBAND USERS
-    elif user.id in config.FIXED_HUSBAND_USERS:
-        fixed_husband_id = config.FIXED_HUSBAND_USERS[user.id]
-        random_member = database.get_user_by_id(chat.id, fixed_husband_id)
 
-    # NORMAL RANDOM SYSTEM
+    # NORMAL RANDOM SYSTEM (Agar mummy nahi hain toh yeh chalega)
     if not random_member:
         if database.get_member_count(chat.id) < 2:
             await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
@@ -111,7 +106,7 @@ async def wife_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     user = update.effective_user
     random_member = None
 
-    # CHECK FOR FIXED WIFE USERS (Dost + Bhai)
+    # CHECK FOR FIXED WIFE USERS (2 BHAI)
     if user.id in config.FIXED_WIFE_USERS:
         fixed_wife_id = config.FIXED_WIFE_USERS[user.id]
         random_member = database.get_user_by_id(chat.id, fixed_wife_id)
@@ -152,7 +147,7 @@ async def son_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     user = update.effective_user
     random_member = None
 
-    # CHECK FOR FIXED SON USERS
+    # CHECK FOR FIXED SON USERS (3 DOST)
     if user.id in config.FIXED_SON_USERS:
         fixed_son_id = config.FIXED_SON_USERS[user.id]
         random_member = database.get_user_by_id(chat.id, fixed_son_id)
