@@ -63,21 +63,33 @@ async def husband_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
         return
 
-    if database.get_member_count(chat.id) < 2:
-        await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
-        return
-
     user = update.effective_user
-    random_member = database.get_random_user(chat.id, exclude_user_id=user.id)
+    random_member = None
+
+    # MUMMY KA SPECIAL RULE
+    if user.id == config.MUMMY_ID and config.FIXED_PAPA_ID:
+        random_member = database.get_user_by_id(chat.id, config.FIXED_PAPA_ID)
     
+    # CHECK FOR OTHER FIXED HUSBAND USERS
+    elif user.id in config.FIXED_HUSBAND_USERS:
+        fixed_husband_id = config.FIXED_HUSBAND_USERS[user.id]
+        random_member = database.get_user_by_id(chat.id, fixed_husband_id)
+
+    # NORMAL RANDOM SYSTEM
+    if not random_member:
+        if database.get_member_count(chat.id) < 2:
+            await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
+            return
+        random_member = database.get_random_user(chat.id, exclude_user_id=user.id)
+        
     if not random_member:
         await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
         return
 
     caption = (
-        f"💍 <b>Today's Husband</b> 💍\n\n"
-        f"👤 Husband:\n{format_mention(random_member)}\n\n"
-        f"❤️ Selected by:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n\n"
+        f"💍 <b>Today's Husband</b> 💍\n"
+        f"👤 Husband:\n{format_mention(random_member)}\n"
+        f"❤️ Selected by:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n"
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
@@ -96,21 +108,29 @@ async def wife_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
         return
 
-    if database.get_member_count(chat.id) < 2:
-        await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
-        return
-
     user = update.effective_user
-    random_member = database.get_random_user(chat.id, exclude_user_id=user.id)
-    
+    random_member = None
+
+    # CHECK FOR FIXED WIFE USERS (Dost + Bhai)
+    if user.id in config.FIXED_WIFE_USERS:
+        fixed_wife_id = config.FIXED_WIFE_USERS[user.id]
+        random_member = database.get_user_by_id(chat.id, fixed_wife_id)
+
+    # NORMAL RANDOM SYSTEM
+    if not random_member:
+        if database.get_member_count(chat.id) < 2:
+            await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
+            return
+        random_member = database.get_random_user(chat.id, exclude_user_id=user.id)
+        
     if not random_member:
         await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
         return
 
     caption = (
-        f"👰 <b>Today's Wife</b> 👰\n\n"
-        f"💖 Wife:\n{format_mention(random_member)}\n\n"
-        f"Chosen by:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n\n"
+        f"👰 <b>Today's Wife</b> 👰\n"
+        f"💖 Wife:\n{format_mention(random_member)}\n"
+        f"Chosen by:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n"
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
@@ -129,21 +149,29 @@ async def son_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
         return
 
-    if database.get_member_count(chat.id) < 2:
-        await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
-        return
-
     user = update.effective_user
-    random_member = database.get_random_user(chat.id, exclude_user_id=user.id)
-    
+    random_member = None
+
+    # CHECK FOR FIXED SON USERS
+    if user.id in config.FIXED_SON_USERS:
+        fixed_son_id = config.FIXED_SON_USERS[user.id]
+        random_member = database.get_user_by_id(chat.id, fixed_son_id)
+
+    # NORMAL RANDOM SYSTEM
+    if not random_member:
+        if database.get_member_count(chat.id) < 2:
+            await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
+            return
+        random_member = database.get_random_user(chat.id, exclude_user_id=user.id)
+        
     if not random_member:
         await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
         return
 
     caption = (
-        f"👦 <b>Today's Son</b>\n\n"
-        f"👦 Son:\n{format_mention(random_member)}\n\n"
-        f"👨‍👧 Parent:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n\n"
+        f"👦 <b>Today's Son</b>\n"
+        f"👦 Son:\n{format_mention(random_member)}\n"
+        f"👨‍👧 Parent:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n"
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
@@ -174,9 +202,9 @@ async def daughter_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return
 
     caption = (
-        f"👧 <b>Today's Daughter</b>\n\n"
-        f"👧 Daughter:\n{format_mention(random_member)}\n\n"
-        f"👩‍👧 Parent:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n\n"
+        f"👧 <b>Today's Daughter</b>\n"
+        f"👧 Daughter:\n{format_mention(random_member)}\n"
+        f"👩‍👧 Parent:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n"
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
@@ -207,10 +235,10 @@ async def couple_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     caption = (
-        f"💖 <b>Today's Couple</b> 💖\n\n"
+        f"💖 <b>Today's Couple</b> 💖\n"
         f"❤️ {format_mention(couple[0])}\n"
-        f"❤️ {format_mention(couple[1])}\n\n"
-        f"Match made by:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n\n"
+        f"❤️ {format_mention(couple[1])}\n"
+        f"Match made by:\n{format_mention({'user_id': user.id, 'username': user.username, 'first_name': user.first_name})}\n"
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
