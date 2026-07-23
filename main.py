@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 import threading
 from flask import Flask
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
@@ -39,8 +40,8 @@ def run_flask():
     app_flask.run(host='0.0.0.0', port=port)
 
 # --- TELEGRAM BOT SETUP ---
-def run_bot():
-    """Function to initialize and run the Telegram Bot."""
+async def setup_bot():
+    """Async function to initialize and run the Telegram Bot."""
     if not config.BOT_TOKEN:
         raise ValueError("BOT_TOKEN is missing! Please set it in your environment variables.")
 
@@ -64,8 +65,28 @@ def run_bot():
 
     logger.info("Starting Random Relationship Bot Polling...")
     
-    # Start Polling (This will block the thread)
-    app.run_polling(drop_pending_updates=True)
+    # Start Polling
+    await app.initialize()
+    await app.updater.start_polling(drop_pending_updates=True)
+    await app.start()
+
+    # Keep the async loop running forever
+    while True:
+        await asyncio.sleep(3600)
+
+def run_bot():
+    """Wrapper to create a new event loop for the background thread (Fixes Python 3.10+ issues)."""
+    # Create a new event loop for this specific thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    try:
+        # Run the async setup_bot function inside this loop
+        loop.run_until_complete(setup_bot())
+    except Exception as e:
+        logger.error(f"Bot thread crashed: {e}")
+    finally:
+        loop.close()
 
 def main() -> None:
     # Start Telegram bot in a separate background thread
