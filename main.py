@@ -55,7 +55,7 @@ def run_bot():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("husband", husband_command))
     app.add_handler(CommandHandler("wife", wife_command))
-    app_command("son", son_command))
+    app.add_handler(CommandHandler("son", son_command))
     app.add_handler(CommandHandler("daughter", daughter_command))
     app.add_handler(CommandHandler("couple", couple_command))
 
