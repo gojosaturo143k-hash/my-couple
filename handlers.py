@@ -1,5 +1,6 @@
 import random
 import logging
+import time
 from telegram import Update, BotCommand
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
@@ -9,13 +10,19 @@ import database
 
 logger = logging.getLogger(__name__)
 
+# --- ANTI-SPAM SYSTEM ---
+# Cooldown time in seconds (10 seconds)
+COOLDOWN_TIME = 10
+# Dictionary to store the last time a user used a command: {user_id: timestamp}
+user_cooldowns = {}
+
+
 def format_mention(user: dict) -> str:
     """Create an HTML clickable mention for a user."""
     name = user.get("first_name") or "Unknown User"
     user_id = user.get("user_id")
     username = user.get("username")
     
-    # If username exists, display @username, but keep it as an HTML link for clickability
     if username:
         display_name = f"@{username}"
     else:
@@ -29,7 +36,6 @@ async def track_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     chat = update.effective_chat
     
-    # Only track in groups and supergroups
     if chat and chat.type in ["group", "supergroup"] and user and not user.is_bot:
         database.save_user(
             chat_id=chat.id,
@@ -56,8 +62,27 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     )
 
 
+# --- ANTI-SPAM CHECKER FUNCTION ---
+def is_spamming(user_id: int) -> bool:
+    """Check if user is spamming. Returns True if they are in cooldown."""
+    current_time = time.time()
+    last_used = user_cooldowns.get(user_id, 0)
+    
+    if current_time - last_used < COOLDOWN_TIME:
+        return True
+        
+    # Update their last used time
+    user_cooldowns[user_id] = current_time
+    return False
+
+
 async def husband_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the /husband command."""
+    if is_spamming(update.effective_user.id):
+        remaining = int(COOLDOWN_TIME - (time.time() - user_cooldowns[update.effective_user.id]))
+        await update.message.reply_text(f"⏳ Chill bro! Wait `{remaining}` seconds before using another command.", parse_mode=ParseMode.HTML)
+        return
+
     chat = update.effective_chat
     if chat.type not in ["group", "supergroup"]:
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
@@ -70,7 +95,7 @@ async def husband_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     if user.id == config.MUMMY_ID and config.FIXED_PAPA_ID:
         random_member = database.get_user_by_id(chat.id, config.FIXED_PAPA_ID)
 
-    # NORMAL RANDOM SYSTEM (Agar mummy nahi hain toh yeh chalega)
+    # NORMAL RANDOM SYSTEM
     if not random_member:
         if database.get_member_count(chat.id) < 2:
             await update.message.reply_text(config.ERR_NOT_ENOUGH_MEMBERS)
@@ -88,16 +113,16 @@ async def husband_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
-    await context.bot.send_photo(
-        chat_id=chat.id,
-        photo=config.HUSBAND_IMAGE,
-        caption=caption,
-        parse_mode=ParseMode.HTML
-    )
+    await context.bot.send_photo(chat_id=chat.id, photo=config.HUSBAND_IMAGE, caption=caption, parse_mode=ParseMode.HTML)
 
 
 async def wife_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the /wife command."""
+    if is_spamming(update.effective_user.id):
+        remaining = int(COOLDOWN_TIME - (time.time() - user_cooldowns[update.effective_user.id]))
+        await update.message.reply_text(f"⏳ Chill bro! Wait `{remaining}` seconds before using another command.", parse_mode=ParseMode.HTML)
+        return
+
     chat = update.effective_chat
     if chat.type not in ["group", "supergroup"]:
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
@@ -129,16 +154,16 @@ async def wife_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
-    await context.bot.send_photo(
-        chat_id=chat.id,
-        photo=config.WIFE_IMAGE,
-        caption=caption,
-        parse_mode=ParseMode.HTML
-    )
+    await context.bot.send_photo(chat_id=chat.id, photo=config.WIFE_IMAGE, caption=caption, parse_mode=ParseMode.HTML)
 
 
 async def son_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the /son command."""
+    if is_spamming(update.effective_user.id):
+        remaining = int(COOLDOWN_TIME - (time.time() - user_cooldowns[update.effective_user.id]))
+        await update.message.reply_text(f"⏳ Chill bro! Wait `{remaining}` seconds before using another command.", parse_mode=ParseMode.HTML)
+        return
+
     chat = update.effective_chat
     if chat.type not in ["group", "supergroup"]:
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
@@ -170,16 +195,16 @@ async def son_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
-    await context.bot.send_photo(
-        chat_id=chat.id,
-        photo=config.SON_IMAGE,
-        caption=caption,
-        parse_mode=ParseMode.HTML
-    )
+    await context.bot.send_photo(chat_id=chat.id, photo=config.SON_IMAGE, caption=caption, parse_mode=ParseMode.HTML)
 
 
 async def daughter_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the /daughter command."""
+    if is_spamming(update.effective_user.id):
+        remaining = int(COOLDOWN_TIME - (time.time() - user_cooldowns[update.effective_user.id]))
+        await update.message.reply_text(f"⏳ Chill bro! Wait `{remaining}` seconds before using another command.", parse_mode=ParseMode.HTML)
+        return
+
     chat = update.effective_chat
     if chat.type not in ["group", "supergroup"]:
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
@@ -203,16 +228,16 @@ async def daughter_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
-    await context.bot.send_photo(
-        chat_id=chat.id,
-        photo=config.DAUGHTER_IMAGE,
-        caption=caption,
-        parse_mode=ParseMode.HTML
-    )
+    await context.bot.send_photo(chat_id=chat.id, photo=config.DAUGHTER_IMAGE, caption=caption, parse_mode=ParseMode.HTML)
 
 
 async def couple_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the /couple command."""
+    if is_spamming(update.effective_user.id):
+        remaining = int(COOLDOWN_TIME - (time.time() - user_cooldowns[update.effective_user.id]))
+        await update.message.reply_text(f"⏳ Chill bro! Wait `{remaining}` seconds before using another command.", parse_mode=ParseMode.HTML)
+        return
+
     chat = update.effective_chat
     if chat.type not in ["group", "supergroup"]:
         await update.message.reply_text(config.ERR_PRIVATE_CHAT)
@@ -237,12 +262,7 @@ async def couple_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         f"{random.choice(config.FUNNY_LINES)}"
     )
 
-    await context.bot.send_photo(
-        chat_id=chat.id,
-        photo=config.COUPLE_IMAGE,
-        caption=caption,
-        parse_mode=ParseMode.HTML
-    )
+    await context.bot.send_photo(chat_id=chat.id, photo=config.COUPLE_IMAGE, caption=caption, parse_mode=ParseMode.HTML)
 
 
 async def post_init(application) -> None:
