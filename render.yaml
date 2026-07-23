@@ -1,0 +1,19 @@
+services:
+  - type: worker
+    name: Random Relationship Bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: HUSBAND_IMAGE
+        sync: false
+      - key: WIFE_IMAGE
+        sync: false
+      - key: SON_IMAGE
+        sync: false
+      - key: DAUGHTER_IMAGE
+        sync: false
+      - key: COUPLE_IMAGE
+        sync: false
