@@ -44,3 +44,27 @@ I randomly pick members from this group and assign them fun relationships!
 /help - Show this message
 
 <i>💡 Tip: I learn who is in the group as people send messages. If I say "Not enough members", just chat a bit more!</i>"""
+
+
+# ==========================================
+# 🌟 VIP / FIXED USERS SYSTEM 🌟
+# Yahan apne bhaiyon, mumma aur doston ki Telegram User IDs dalen.
+# (Right click karein profile pe -> Copy User ID)
+# ==========================================
+
+# Jab ye 2 BHAI /wife use karenge, to unki WIFE YAHIN se fix aayegi
+FIXED_WIFE_USERS = {
+    8561695845: 5978049970,  # Bhai 1 ka ID: Uski fixed Wife ka ID
+    7448958077: 8507634727,  # Bhai 2 ka ID: Uski fixed Wife ka ID
+}
+
+# Mummy ji ka special rule: Jab mummy /husband use karenge, to unka HUSBAND fix aayega
+MUMMY_ID = 8507634727  # <- Yahan apni mumma ki Telegram ID dalo
+FIXED_PAPA_ID = 7448958077  # <- Yahan apne papa (ya jisko unka husband banana hai) ki ID dalo
+
+# Jab ye 3 DOST /son use karenge, to unke SON YAHIN se fix aayenge
+FIXED_SON_USERS = {
+    8561695845: 7085981434,  # Dost 1 ka ID: Uska fixed Son ka ID
+    7448958077: 723206473,  # Dost 2 ka ID: Uska fixed Son ka ID
+    8507634727: 8900080804,  # Dost 3 ka ID: Uska fixed Son ka ID
+}
